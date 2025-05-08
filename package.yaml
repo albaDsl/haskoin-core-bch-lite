@@ -1,18 +1,15 @@
 name: haskoin-core
-version: 1.2.0
+version: 1.2.1
 synopsis: Bitcoin & Bitcoin Cash library for Haskell
 description: Please see the README on GitHub at <https://github.com/haskoin/haskoin-core#readme>
 category: Bitcoin, Finance, Network
-author:
-  - Philippe Laprade
-  - Jean-Pierre Rupp
-  - Matthew Wraith
+author: Jean-Pierre Rupp
 maintainer: jprupp@protonmail.ch
 license: MIT
 license-file: LICENSE
-homepage: http://github.com/haskoin/haskoin-core#readme
-git: git://github.com/haskoin/haskoin-core.git
-bug-reports: http://github.com/haskoin/haskoin-core/issues
+homepage: http://github.com/jprupp/haskoin-core#readme
+git: git://github.com/jprupp/haskoin-core.git
+bug-reports: http://github.com/jprupp/haskoin-core/issues
 extra-source-files:
   - data/*.json
   - data/*.txt
