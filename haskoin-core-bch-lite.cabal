@@ -1,0 +1,67 @@
+cabal-version: 3.6
+
+name:           haskoin-core-bch-lite
+version:        0.0.1
+synopsis:       Bitcoin Cash library for Haskell
+category:       Bitcoin, Finance, Network
+author:         JP Rupp
+maintainer:     albaDsl
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: git://github.com/albaDsl/haskoin-core-bch-lite.git
+
+common shared-properties
+  default-language: GHC2021
+  ghc-options: -Wall -Werror
+               -- Disable some warnings during development.
+               -- -Wno-partial-type-signatures
+               -- -Wno-unused-imports
+               -- -Wno-unused-top-binds
+               -- -Wno-unused-local-binds
+               -- -Wno-unused-matches
+  default-extensions:
+       DeriveAnyClass
+       DerivingStrategies
+       DuplicateRecordFields
+       LambdaCase
+       OverloadedRecordDot
+       OverloadedStrings
+       RecordWildCards
+       NoFieldSelectors
+
+library
+  import: shared-properties
+  exposed-modules:
+      Haskoin
+      Haskoin.Address.Address
+      Haskoin.Address.Base58
+      Haskoin.Address.CashAddr
+      Haskoin.Crypto.Hash
+      Haskoin.Crypto.Keys
+      Haskoin.Crypto.Signature
+      Haskoin.Network
+      Haskoin.Transaction.VarInt
+      Haskoin.Transaction.SigHash
+      Haskoin.Util.Helpers
+      Haskoin.Util.Marshal
+  other-modules:
+  hs-source-dirs:
+      src
+  build-depends:
+    , array
+    , base
+    , base16
+    , binary
+    , bytestring
+    , crypton
+    , deepseq
+    , hashable
+    , memory
+    , scientific
+    , secp256k1-haskell
+    , string-conversions
+    , text

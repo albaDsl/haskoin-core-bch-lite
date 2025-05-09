@@ -1,5 +1,0 @@
-resolver: lts-23.21
-nix:
-  packages:
-    - secp256k1
-    - pkg-config

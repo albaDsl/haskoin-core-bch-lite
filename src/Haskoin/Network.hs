@@ -1,27 +1,32 @@
-{-# LANGUAGE DuplicateRecordFields #-}
-
--- |
--- Module      : Haskoin.Network
 -- Copyright   : No rights reserved
 -- License     : MIT
--- Maintainer  : jprupp@protonmail.ch
 -- Stability   : experimental
 -- Portability : POSIX
---
--- This module provides basic types used for the Bitcoin networking protocol
--- together with 'Data.Serialize' instances for efficiently serializing and
--- de-serializing them.
-module Haskoin.Network
-  ( module Data,
-    module Constants,
-    module Common,
-    module Message,
-    module Bloom,
-  )
-where
 
-import Haskoin.Network.Bloom as Bloom
-import Haskoin.Network.Common as Common
-import Haskoin.Network.Constants as Constants
-import Haskoin.Network.Data as Data
-import Haskoin.Network.Message as Message
+module Haskoin.Network (mainnet, chipnet, Network (..)) where
+
+import Data.Text (Text)
+import Data.Word (Word8)
+
+data Network = Network
+  { name :: !String,
+    secretPrefix :: !Word8,
+    cashAddrPrefix :: !(Maybe Text)
+  }
+  deriving (Eq, Show)
+
+mainnet :: Network
+mainnet =
+  Network
+    { name = "mainnet",
+      secretPrefix = 128,
+      cashAddrPrefix = Just "bitcoincash"
+    }
+
+chipnet :: Network
+chipnet =
+  Network
+    { name = "chipnet",
+      secretPrefix = 239,
+      cashAddrPrefix = Just "bchtest"
+    }

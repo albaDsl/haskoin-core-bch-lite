@@ -1,64 +1,60 @@
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedRecordDot #-}
-{-# LANGUAGE OverloadedStrings #-}
-
--- |
 -- Module      : Haskoin.Crypto.Signature
 -- Copyright   : No rights reserved
 -- License     : MIT
 -- Maintainer  : jprupp@protonmail.ch
 -- Stability   : experimental
 -- Portability : POSIX
---
--- ECDSA signatures using secp256k1 curve. Uses functions from upstream secp256k1
--- library.
+{-# OPTIONS_GHC -Wno-orphans #-}
+
 module Haskoin.Crypto.Signature
-  ( -- * Signatures
-    signHash,
+  ( signHash,
     verifyHashSig,
-    isCanonicalHalfOrder,
-    decodeStrictSig,
-    exportSig,
   )
 where
 
 import Control.Monad (guard, unless, when)
 import Crypto.Secp256k1
-import Data.Aeson
-import Data.Aeson.Encoding
-import Data.Binary (Binary (..))
+  ( CompactSig (get),
+    Ctx,
+    Msg,
+    PubKey,
+    SecKey,
+    Sig,
+    exportCompactSig,
+    exportSig,
+    importSig,
+    msg,
+    normalizeSig,
+    signMsg,
+    verifySig,
+  )
+import Data.Binary (encode, getWord8)
+import Data.Binary.Get (getByteString, lookAhead)
+import Data.Binary.Put (putByteString)
 import Data.ByteString (ByteString)
 import Data.ByteString qualified as B
-import Data.ByteString.Lazy qualified as L
-import Data.Bytes.Get
-import Data.Bytes.Put
-import Data.Bytes.Serial
+import Data.ByteString.Lazy (toStrict)
 import Data.Maybe (fromMaybe, isNothing)
-import Data.Serialize (Serialize (..))
-import Data.Text qualified as T
-import Haskoin.Crypto.Hash
-import Haskoin.Util.Helpers
-import Haskoin.Util.Marshal
+import Haskoin.Crypto.Hash (Hash256)
+import Haskoin.Util.Marshal (Marshal (..))
 import Numeric (showHex)
 
--- | Convert 256-bit hash into a 'Msg' for signing or verification.
-hashToMsg :: Hash256 -> Msg
-hashToMsg =
-  fromMaybe e . msg . runPutS . serialize
-  where
-    e = error "Could not convert 32-byte hash to secp256k1 message"
-
--- | Sign a 256-bit hash using secp256k1 elliptic curve.
+-- Sign a 256-bit hash using secp256k1 elliptic curve.
 signHash :: Ctx -> SecKey -> Hash256 -> Sig
 signHash ctx k = signMsg ctx k . hashToMsg
 
--- | Verify an ECDSA signature for a 256-bit hash.
+-- Verify an ECDSA signature for a 256-bit hash.
 verifyHashSig :: Ctx -> Hash256 -> Sig -> PubKey -> Bool
 verifyHashSig ctx h s p = verifySig ctx p norm (hashToMsg h)
   where
     norm = fromMaybe s (normalizeSig ctx s)
+
+-- Convert 256-bit hash into a 'Msg' for signing or verification.
+hashToMsg :: Hash256 -> Msg
+hashToMsg =
+  fromMaybe e . msg . toStrict . encode
+  where
+    e = error "Could not convert 32-byte hash to secp256k1 message"
 
 instance Marshal Ctx Sig where
   marshalGet ctx = do
@@ -79,20 +75,6 @@ instance Marshal Ctx Sig where
 
   marshalPut ctx s = putByteString $ exportSig ctx s
 
-instance MarshalJSON Ctx Sig where
-  marshalValue ctx = String . encodeHex . exportSig ctx
-  marshalEncoding ctx = hexEncoding . L.fromStrict . exportSig ctx
-  unmarshalValue ctx =
-    withText "Sig" $ \t ->
-      case decodeHex t >>= importSig ctx of
-        Nothing -> fail $ "Could not decode signature: " <> T.unpack t
-        Just s -> return s
-
--- | Is canonical half order.
-isCanonicalHalfOrder :: Ctx -> Sig -> Bool
-isCanonicalHalfOrder ctx = isNothing . normalizeSig ctx
-
--- | Decode signature strictly.
 decodeStrictSig :: Ctx -> ByteString -> Maybe Sig
 decodeStrictSig ctx bs = do
   g <- importSig ctx bs
@@ -104,3 +86,6 @@ decodeStrictSig ctx bs = do
   guard $ (B.take 32 . B.drop 32) compact.get /= zero
   guard $ isCanonicalHalfOrder ctx g
   return g
+
+isCanonicalHalfOrder :: Ctx -> Sig -> Bool
+isCanonicalHalfOrder ctx = isNothing . normalizeSig ctx

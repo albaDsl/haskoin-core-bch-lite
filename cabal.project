@@ -1,0 +1,5 @@
+import: ./lts-nightly-2024-10-11.config
+packages: haskoin-core-bch-lite.cabal
+
+jobs: $ncpus
+semaphore: true
